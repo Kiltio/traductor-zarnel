@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Zarnel Translator</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
     <style>
         body {
             font-family: 'Roboto', sans-serif;
@@ -21,7 +22,6 @@
             padding: 20px;
         }
 
-        /* Contenedor de botones de idioma */
         .header-controls {
             display: flex;
             align-items: center;
@@ -29,7 +29,6 @@
             margin-bottom: 12px;
         }
 
-        /* Botones blancos con flechita azul */
         .lang-selector {
             background: white;
             border: 1px solid #dadce0;
@@ -52,7 +51,6 @@
             margin-left: 10px;
         }
 
-        /* Botón de flecha de intercambio */
         .swap-btn {
             background: none;
             border: none;
@@ -66,11 +64,8 @@
             transition: background 0.2s;
         }
 
-        .swap-btn:hover {
-            background-color: #f1f3f4;
-        }
+        .swap-btn:hover { background-color: #f1f3f4; }
 
-        /* Cuadrícula de traducción */
         .translation-grid {
             display: flex;
             gap: 12px;
@@ -82,18 +77,18 @@
             border: 1px solid #dadce0;
             border-radius: 8px;
             min-height: 250px;
-            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            position: relative;
         }
 
-        .box-output {
-            background-color: #f8f9fa; /* Color gris suave para el resultado */
-        }
+        .box-output { background-color: #f8f9fa; }
 
         textarea {
             width: 100%;
             height: 100%;
             border: none;
-            padding: 20px;
+            padding: 20px 20px 60px 20px;
             font-size: 28px;
             color: #3c4043;
             resize: none;
@@ -103,15 +98,53 @@
             box-sizing: border-box;
         }
 
-        textarea::placeholder {
-            color: #70757a;
+        textarea::placeholder { color: #70757a; }
+
+        /* Estilo del botón de copiar */
+        .copy-btn {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: #5f6368;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s, color 0.2s;
         }
 
-        @media (max-width: 768px) {
-            .translation-grid {
-                flex-direction: column;
-            }
+        .copy-btn:hover {
+            background-color: #e8eaed;
+            color: #1a73e8;
         }
+
+        .copy-btn .material-icons-outlined { font-size: 24px; }
+
+        /* Mensaje flotante de copiado */
+        #toast {
+            visibility: hidden;
+            min-width: 150px;
+            background-color: #323232;
+            color: #fff;
+            text-align: center;
+            border-radius: 4px;
+            padding: 12px;
+            position: fixed;
+            z-index: 1;
+            bottom: 30px;
+            font-size: 14px;
+        }
+
+        #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
+
+        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+        @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+
+        @media (max-width: 768px) { .translation-grid { flex-direction: column; } }
     </style>
 </head>
 <body>
@@ -119,9 +152,7 @@
 <div class="main-container">
     <div class="header-controls">
         <div class="lang-selector" id="label-left">Español</div>
-        
-        <button class="swap-btn" onclick="intercambiarIdiomas()" title="Intercambiar idiomas">⇄</button>
-        
+        <button class="swap-btn" onclick="intercambiarIdiomas()">⇄</button>
         <div class="lang-selector" id="label-right">Zarnel</div>
     </div>
 
@@ -131,27 +162,26 @@
         </div>
         <div class="box box-output">
             <textarea id="output-text" placeholder="Traducción" readonly></textarea>
+            <button class="copy-btn" onclick="copiarAlPortapapeles()" title="Copiar traducción">
+                <span class="material-icons-outlined">content_copy</span>
+            </button>
         </div>
     </div>
 </div>
 
+<div id="toast">Texto copiado</div>
+
 <script>
-    // Tu abecedario Zarnel
     const diccionario = {
         'a':'va','e':'ve','i':'vi','o':'vo','u':'vu',
         'b':'ca','c':'ce','d':'ci','f':'co','g':'cu','h':'da','j':'de','k':'di','l':'do','m':'du','n':'fa','ñ':'fe','p':'fi','q':'fo','r':'fu','s':'ga','t':'ge','v':'gi','w':'go','x':'gu','y':'ha','z':'he'
     };
 
-    // Diccionario invertido para traducir de Zarnel a Español
     const diccionarioInverso = {};
-    for (let letra in diccionario) {
-        diccionarioInverso[diccionario[letra]] = letra;
-    }
+    for (let letra in diccionario) { diccionarioInverso[diccionario[letra]] = letra; }
 
-    // Variable para saber en qué dirección traducimos
     let esEspañolAZarnel = true;
 
-    // Función para limpiar tildes y pasar a minúsculas
     function limpiarTexto(texto) {
         return texto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     }
@@ -161,53 +191,47 @@
         const salida = document.getElementById('output-text');
         
         if (esEspañolAZarnel) {
-            // Lógica: Español -> Zarnel
             let textoLimpio = limpiarTexto(entrada);
             let resultado = "";
-            for (let letra of textoLimpio) {
-                resultado += diccionario[letra] || letra;
-            }
+            for (let letra of textoLimpio) { resultado += diccionario[letra] || letra; }
             salida.value = resultado;
         } else {
-            // Lógica: Zarnel -> Español
             let textoZar = entrada.toLowerCase();
             let resultado = "";
             let i = 0;
             while (i < textoZar.length) {
                 let par = textoZar.substr(i, 2);
-                if (diccionarioInverso[par]) {
-                    resultado += diccionarioInverso[par];
-                    i += 2;
-                } else {
-                    resultado += textoZar[i];
-                    i += 1;
-                }
+                if (diccionarioInverso[par]) { resultado += diccionarioInverso[par]; i += 2; }
+                else { resultado += textoZar[i]; i += 1; }
             }
             salida.value = resultado;
         }
     }
 
-    // Función que se activa al presionar la flecha ⇄
     function intercambiarIdiomas() {
-        // Cambiamos el modo
         esEspañolAZarnel = !esEspañolAZarnel;
-        
-        // Intercambiamos los nombres de los botones
         const labelIzq = document.getElementById('label-left');
         const labelDer = document.getElementById('label-right');
         const tempLabel = labelIzq.innerText;
         labelIzq.innerText = labelDer.innerText;
         labelDer.innerText = tempLabel;
 
-        // Pasamos el texto de la derecha a la izquierda para poder traducir de vuelta
         const inputField = document.getElementById('input-text');
         const outputField = document.getElementById('output-text');
-        
         const textoParaMover = outputField.value;
         inputField.value = textoParaMover;
-        
-        // Ejecutamos la traducción con el nuevo modo
         ejecutarTraduccion();
+    }
+
+    function copiarAlPortapapeles() {
+        const copyText = document.getElementById("output-text");
+        if (!copyText.value) return;
+        
+        navigator.clipboard.writeText(copyText.value).then(() => {
+            const toast = document.getElementById("toast");
+            toast.className = "show";
+            setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 3000);
+        });
     }
 </script>
 
