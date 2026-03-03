@@ -79,7 +79,8 @@
             min-height: 250px;
             display: flex;
             flex-direction: column;
-            position: relative;
+            position: relative; /* Para que el botón se posicione respecto a la caja */
+            overflow: hidden;
         }
 
         .box-output { background-color: #f8f9fa; }
@@ -88,7 +89,8 @@
             width: 100%;
             height: 100%;
             border: none;
-            padding: 20px 20px 60px 20px;
+            /* Aumentamos el padding inferior para que el texto nunca toque el botón */
+            padding: 25px 25px 70px 25px; 
             font-size: 28px;
             color: #3c4043;
             resize: none;
@@ -96,35 +98,37 @@
             background: transparent;
             font-family: inherit;
             box-sizing: border-box;
+            caret-color: #1a73e8; /* Cursor azul para que se vea mejor */
         }
 
         textarea::placeholder { color: #70757a; }
 
-        /* Estilo del botón de copiar */
         .copy-btn {
             position: absolute;
-            bottom: 10px;
-            right: 10px;
-            background: none;
-            border: none;
+            bottom: 15px;
+            right: 15px;
+            background: white; /* Fondo sólido para que no se mezcle con el cursor */
+            border: 1px solid #dadce0;
             color: #5f6368;
             cursor: pointer;
-            padding: 8px;
-            border-radius: 50%;
+            padding: 10px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: background 0.2s, color 0.2s;
+            transition: all 0.2s;
+            z-index: 10; /* Siempre por encima del texto */
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
 
         .copy-btn:hover {
-            background-color: #e8eaed;
+            background-color: #f8f9fa;
             color: #1a73e8;
+            border-color: #1a73e8;
         }
 
-        .copy-btn .material-icons-outlined { font-size: 24px; }
+        .copy-btn .material-icons-outlined { font-size: 22px; }
 
-        /* Mensaje flotante de copiado */
         #toast {
             visibility: hidden;
             min-width: 150px;
@@ -134,8 +138,10 @@
             border-radius: 4px;
             padding: 12px;
             position: fixed;
-            z-index: 1;
+            z-index: 100;
             bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
             font-size: 14px;
         }
 
@@ -176,10 +182,8 @@
         'a':'va','e':'ve','i':'vi','o':'vo','u':'vu',
         'b':'ca','c':'ce','d':'ci','f':'co','g':'cu','h':'da','j':'de','k':'di','l':'do','m':'du','n':'fa','ñ':'fe','p':'fi','q':'fo','r':'fu','s':'ga','t':'ge','v':'gi','w':'go','x':'gu','y':'ha','z':'he'
     };
-
     const diccionarioInverso = {};
     for (let letra in diccionario) { diccionarioInverso[diccionario[letra]] = letra; }
-
     let esEspañolAZarnel = true;
 
     function limpiarTexto(texto) {
@@ -189,7 +193,6 @@
     function ejecutarTraduccion() {
         const entrada = document.getElementById('input-text').value;
         const salida = document.getElementById('output-text');
-        
         if (esEspañolAZarnel) {
             let textoLimpio = limpiarTexto(entrada);
             let resultado = "";
@@ -215,7 +218,6 @@
         const tempLabel = labelIzq.innerText;
         labelIzq.innerText = labelDer.innerText;
         labelDer.innerText = tempLabel;
-
         const inputField = document.getElementById('input-text');
         const outputField = document.getElementById('output-text');
         const textoParaMover = outputField.value;
@@ -226,7 +228,6 @@
     function copiarAlPortapapeles() {
         const copyText = document.getElementById("output-text");
         if (!copyText.value) return;
-        
         navigator.clipboard.writeText(copyText.value).then(() => {
             const toast = document.getElementById("toast");
             toast.className = "show";
