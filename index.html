@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traductor Zarnel</title>
+    <style>
+        body { font-family: sans-serif; background: #f0f2f5; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .container { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 600px; }
+        h1 { color: #1a73e8; text-align: center; }
+        textarea { width: 100%; height: 100px; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-size: 16px; }
+        .arrow { text-align: center; font-size: 24px; color: #555; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Zarnel Translator</h1>
+    
+    <label>Español:</label>
+    <textarea id="inputEsp" placeholder="Escribe algo aquí..." oninput="traducirAZarnel()"></textarea>
+
+    <div class="arrow">↓ ↑</div>
+
+    <label>Zarnel:</label>
+    <textarea id="inputZar" placeholder="Geve gefe..." oninput="traducirAEspanol()"></textarea>
+</div>
+
+<script>
+    const diccionario = {
+        'a':'va','e':'ve','i':'vi','o':'vo','u':'vu',
+        'b':'ca','c':'ce','d':'ci','f':'co','g':'cu','h':'da','j':'de','k':'di','l':'do','m':'du','n':'fa','ñ':'fe','p':'fi','q':'fo','r':'fu','s':'ga','t':'ge','v':'gi','w':'go','x':'gu','y':'ha','z':'he'
+    };
+
+    // Crear un diccionario invertido para traducir de Zarnel a Español
+    const invDiccionario = {};
+    for(let letra in diccionario) {
+        invDiccionario[diccionario[letra]] = letra;
+    }
+
+    function limpiarTexto(texto) {
+        return texto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    }
+
+    function traducirAZarnel() {
+        let texto = limpiarTexto(document.getElementById('inputEsp').value);
+        let resultado = "";
+        
+        for (let letra of texto) {
+            resultado += diccionario[letra] || letra; 
+        }
+        document.getElementById('inputZar').value = resultado;
+    }
+
+    function traducirAEspanol() {
+        let texto = document.getElementById('inputZar').value.toLowerCase();
+        let resultado = "";
+        let i = 0;
+
+        while (i < texto.length) {
+            let par = texto.substr(i, 2);
+            if (invDiccionario[par]) {
+                resultado += invDiccionario[par];
+                i += 2;
+            } else {
+                resultado += texto[i];
+                i += 1;
+            }
+        }
+        document.getElementById('inputEsp').value = resultado;
+    }
+</script>
+
+</body>
+</html>
