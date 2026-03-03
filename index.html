@@ -11,109 +11,103 @@
             background-color: #ffffff;
             margin: 0;
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: #3c4043;
+            justify-content: center;
+            padding-top: 40px;
         }
 
-        .main-wrapper {
+        .main-container {
             width: 100%;
             max-width: 1000px;
-            margin-top: 50px;
             padding: 20px;
         }
 
-        /* Contenedor de los selectores de idioma y flecha */
-        .controls {
+        /* Selectores de idioma estilo Google */
+        .header-controls {
             display: flex;
             align-items: center;
-            justify-content: flex-start;
             gap: 10px;
-            margin-bottom: 8px;
+            margin-bottom: 12px;
         }
 
-        .lang-box {
+        .lang-selector {
+            background: white;
             border: 1px solid #dadce0;
             border-radius: 8px;
-            padding: 10px 15px;
-            min-width: 150px;
-            font-weight: 500;
-            color: #1a73e8;
+            padding: 10px 16px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            min-width: 180px;
+            color: #1a73e8;
+            font-weight: 500;
+            font-size: 15px;
             cursor: default;
         }
 
-        .lang-box::after {
-            content: '▼';
-            font-size: 10px;
+        .lang-selector::after {
+            content: "";
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 5px solid #1a73e8;
             margin-left: 10px;
         }
 
-        .swap-icon {
-            cursor: pointer;
+        .swap-btn {
+            background: none;
+            border: none;
             color: #5f6368;
-            font-size: 20px;
-            padding: 5px;
-            transition: background 0.2s;
-            border-radius: 50%;
+            font-size: 22px;
+            cursor: pointer;
+            padding: 8px;
             display: flex;
             align-items: center;
-            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.2s;
         }
 
-        .swap-icon:hover {
+        .swap-btn:hover {
             background-color: #f1f3f4;
         }
 
         /* Contenedor de las cajas de texto */
-        .translator-container {
+        .translation-grid {
             display: flex;
             gap: 12px;
-            width: 100%;
         }
 
         .box {
             flex: 1;
-            position: relative;
+            background: white;
+            border: 1px solid #dadce0;
+            border-radius: 8px;
+            min-height: 220px;
+            box-sizing: border-box;
+        }
+
+        .box-output {
+            background-color: #f8f9fa; /* Color gris de la imagen */
         }
 
         textarea {
             width: 100%;
-            height: 180px;
-            border: 1px solid #dadce0;
-            border-radius: 8px;
+            height: 100%;
+            border: none;
             padding: 20px;
-            font-size: 24px;
+            font-size: 28px; /* Fuente grande como la imagen */
             color: #3c4043;
             resize: none;
             outline: none;
-            box-sizing: border-box;
+            background: transparent;
             font-family: inherit;
+            box-sizing: border-box;
         }
 
-        #output-text {
-            background-color: #f8f9fa;
-        }
-
-        /* Estilo del placeholder como el de tu imagen */
         textarea::placeholder {
             color: #70757a;
-            font-weight: 400;
-        }
-
-        .mic-icon {
-            position: absolute;
-            bottom: 15px;
-            left: 20px;
-            color: #5f6368;
-            font-size: 20px;
-            cursor: pointer;
         }
 
         @media (max-width: 768px) {
-            .translator-container {
+            .translation-grid {
                 flex-direction: column;
             }
         }
@@ -121,85 +115,83 @@
 </head>
 <body>
 
-<div class="main-wrapper">
-    <div class="controls">
-        <div class="lang-box" id="label-left">Español</div>
-        <div class="swap-icon" onclick="swap()">⇄</div>
-        <div class="lang-box" id="label-right">Zarnel</div>
+<div class="main-container">
+    <div class="header-controls">
+        <div class="lang-selector" id="label-left">Español</div>
+        <button class="swap-btn" onclick="intercambiar()">⇄</button>
+        <div class="lang-selector" id="label-right">Zarnel</div>
     </div>
 
-    <div class="translator-container">
+    <div class="translation-grid">
         <div class="box">
-            <textarea id="input-text" placeholder="Escribe, habla o toma fotos" oninput="translate()"></textarea>
-            <div class="mic-icon">🎤</div>
+            <textarea id="input-text" placeholder="Escribe algo aquí..." oninput="traducir()"></textarea>
         </div>
-        <div class="box">
+        <div class="box box-output">
             <textarea id="output-text" placeholder="Traducción" readonly></textarea>
         </div>
     </div>
 </div>
 
 <script>
-    const dictionary = {
+    const abecedarioZarnel = {
         'a':'va','e':'ve','i':'vi','o':'vo','u':'vu',
-        'b':'ca','c':'ce','ci':'ci','d':'ci','f':'co','g':'cu','h':'da','j':'de','k':'di','l':'do','m':'du','n':'fa','ñ':'fe','p':'fi','q':'fo','r':'fu','s':'ga','t':'ge','v':'gi','w':'go','x':'gu','y':'ha','z':'he'
+        'b':'ca','c':'ce','d':'ci','f':'co','g':'cu','h':'da','j':'de','k':'di','l':'do','m':'du',
+        'n':'fa','ñ':'fe','p':'fi','q':'fo','r':'fu','s':'ga','t':'ge','v':'gi','w':'go','x':'gu','y':'ha','z':'he'
     };
 
-    const reverseDict = {};
-    for (let key in dictionary) { reverseDict[dictionary[key]] = key; }
+    const reversoZarnel = {};
+    for (let letra in abecedarioZarnel) { reversoZarnel[abecedarioZarnel[letra]] = letra; }
 
-    let isSpanishToZarnel = true;
+    let modoEspañol = true;
 
-    function cleanText(text) {
-        return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    function limpiar(texto) {
+        return texto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     }
 
-    function translate() {
-        const input = document.getElementById('input-text').value;
-        const output = document.getElementById('output-text');
+    function traducir() {
+        const entrada = document.getElementById('input-text').value;
+        const salida = document.getElementById('output-text');
         
-        if (isSpanishToZarnel) {
-            let cleanInput = cleanText(input);
-            let result = "";
-            for (let char of cleanInput) {
-                result += dictionary[char] || char;
+        if (modoEspañol) {
+            let textoLimpio = limpiar(entrada);
+            let resultado = "";
+            for (let letra of textoLimpio) {
+                resultado += abecedarioZarnel[letra] || letra;
             }
-            output.value = result;
+            salida.value = resultado;
         } else {
-            let zarInput = input.toLowerCase();
-            let result = "";
+            let textoZar = entrada.toLowerCase();
+            let resultado = "";
             let i = 0;
-            while (i < zarInput.length) {
-                let pair = zarInput.substr(i, 2);
-                if (reverseDict[pair]) {
-                    result += reverseDict[pair];
+            while (i < textoZar.length) {
+                let par = textoZar.substr(i, 2);
+                if (reversoZarnel[par]) {
+                    resultado += reversoZarnel[par];
                     i += 2;
                 } else {
-                    result += zarInput[i];
+                    resultado += textoZar[i];
                     i += 1;
                 }
             }
-            output.value = result;
+            salida.value = resultado;
         }
     }
 
-    function swap() {
-        isSpanishToZarnel = !isSpanishToZarnel;
+    function intercambiar() {
+        modoEspañol = !modoEspañol;
         
-        // Intercambiar etiquetas
-        const left = document.getElementById('label-left');
-        const right = document.getElementById('label-right');
-        const tempLabel = left.innerText;
-        left.innerText = right.innerText;
-        right.innerText = tempLabel;
+        const labelIzq = document.getElementById('label-left');
+        const labelDer = document.getElementById('label-right');
+        const tempLabel = labelIzq.innerText;
+        labelIzq.innerText = labelDer.innerText;
+        labelDer.innerText = tempLabel;
 
-        // Intercambiar contenido de las cajas
-        const inputField = document.getElementById('input-text');
-        const outputField = document.getElementById('output-text');
-        const tempText = inputField.value;
-        inputField.value = outputField.value;
+        const input = document.getElementById('input-text');
+        const output = document.getElementById('output-text');
+        const tempText = input.value;
+        input.value = output.value;
         
-        translate();
+        traducir();
     }
 </script>
 
