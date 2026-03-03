@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Traductor Zarnel</title>
+    <title>Zarnel Translator</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
     <style>
         body {
@@ -21,7 +21,7 @@
             padding: 20px;
         }
 
-        /* Selectores de idioma estilo Google */
+        /* Contenedor de botones de idioma */
         .header-controls {
             display: flex;
             align-items: center;
@@ -29,6 +29,7 @@
             margin-bottom: 12px;
         }
 
+        /* Botones blancos con flechita azul */
         .lang-selector {
             background: white;
             border: 1px solid #dadce0;
@@ -41,7 +42,6 @@
             color: #1a73e8;
             font-weight: 500;
             font-size: 15px;
-            cursor: default;
         }
 
         .lang-selector::after {
@@ -52,6 +52,7 @@
             margin-left: 10px;
         }
 
+        /* Botón de flecha de intercambio */
         .swap-btn {
             background: none;
             border: none;
@@ -69,7 +70,7 @@
             background-color: #f1f3f4;
         }
 
-        /* Contenedor de las cajas de texto */
+        /* Cuadrícula de traducción */
         .translation-grid {
             display: flex;
             gap: 12px;
@@ -80,12 +81,12 @@
             background: white;
             border: 1px solid #dadce0;
             border-radius: 8px;
-            min-height: 220px;
+            min-height: 250px;
             box-sizing: border-box;
         }
 
         .box-output {
-            background-color: #f8f9fa; /* Color gris de la imagen */
+            background-color: #f8f9fa; /* Color gris suave para el resultado */
         }
 
         textarea {
@@ -93,7 +94,7 @@
             height: 100%;
             border: none;
             padding: 20px;
-            font-size: 28px; /* Fuente grande como la imagen */
+            font-size: 28px;
             color: #3c4043;
             resize: none;
             outline: none;
@@ -118,13 +119,15 @@
 <div class="main-container">
     <div class="header-controls">
         <div class="lang-selector" id="label-left">Español</div>
-        <button class="swap-btn" onclick="intercambiar()">⇄</button>
+        
+        <button class="swap-btn" onclick="intercambiarIdiomas()" title="Intercambiar idiomas">⇄</button>
+        
         <div class="lang-selector" id="label-right">Zarnel</div>
     </div>
 
     <div class="translation-grid">
         <div class="box">
-            <textarea id="input-text" placeholder="Escribe algo aquí..." oninput="traducir()"></textarea>
+            <textarea id="input-text" placeholder="Escribe algo aquí..." oninput="ejecutarTraduccion()"></textarea>
         </div>
         <div class="box box-output">
             <textarea id="output-text" placeholder="Traducción" readonly></textarea>
@@ -133,40 +136,47 @@
 </div>
 
 <script>
-    const abecedarioZarnel = {
+    // Tu abecedario Zarnel
+    const diccionario = {
         'a':'va','e':'ve','i':'vi','o':'vo','u':'vu',
-        'b':'ca','c':'ce','d':'ci','f':'co','g':'cu','h':'da','j':'de','k':'di','l':'do','m':'du',
-        'n':'fa','ñ':'fe','p':'fi','q':'fo','r':'fu','s':'ga','t':'ge','v':'gi','w':'go','x':'gu','y':'ha','z':'he'
+        'b':'ca','c':'ce','d':'ci','f':'co','g':'cu','h':'da','j':'de','k':'di','l':'do','m':'du','n':'fa','ñ':'fe','p':'fi','q':'fo','r':'fu','s':'ga','t':'ge','v':'gi','w':'go','x':'gu','y':'ha','z':'he'
     };
 
-    const reversoZarnel = {};
-    for (let letra in abecedarioZarnel) { reversoZarnel[abecedarioZarnel[letra]] = letra; }
+    // Diccionario invertido para traducir de Zarnel a Español
+    const diccionarioInverso = {};
+    for (let letra in diccionario) {
+        diccionarioInverso[diccionario[letra]] = letra;
+    }
 
-    let modoEspañol = true;
+    // Variable para saber en qué dirección traducimos
+    let esEspañolAZarnel = true;
 
-    function limpiar(texto) {
+    // Función para limpiar tildes y pasar a minúsculas
+    function limpiarTexto(texto) {
         return texto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     }
 
-    function traducir() {
+    function ejecutarTraduccion() {
         const entrada = document.getElementById('input-text').value;
         const salida = document.getElementById('output-text');
         
-        if (modoEspañol) {
-            let textoLimpio = limpiar(entrada);
+        if (esEspañolAZarnel) {
+            // Lógica: Español -> Zarnel
+            let textoLimpio = limpiarTexto(entrada);
             let resultado = "";
             for (let letra of textoLimpio) {
-                resultado += abecedarioZarnel[letra] || letra;
+                resultado += diccionario[letra] || letra;
             }
             salida.value = resultado;
         } else {
+            // Lógica: Zarnel -> Español
             let textoZar = entrada.toLowerCase();
             let resultado = "";
             let i = 0;
             while (i < textoZar.length) {
                 let par = textoZar.substr(i, 2);
-                if (reversoZarnel[par]) {
-                    resultado += reversoZarnel[par];
+                if (diccionarioInverso[par]) {
+                    resultado += diccionarioInverso[par];
                     i += 2;
                 } else {
                     resultado += textoZar[i];
@@ -177,21 +187,27 @@
         }
     }
 
-    function intercambiar() {
-        modoEspañol = !modoEspañol;
+    // Función que se activa al presionar la flecha ⇄
+    function intercambiarIdiomas() {
+        // Cambiamos el modo
+        esEspañolAZarnel = !esEspañolAZarnel;
         
+        // Intercambiamos los nombres de los botones
         const labelIzq = document.getElementById('label-left');
         const labelDer = document.getElementById('label-right');
         const tempLabel = labelIzq.innerText;
         labelIzq.innerText = labelDer.innerText;
         labelDer.innerText = tempLabel;
 
-        const input = document.getElementById('input-text');
-        const output = document.getElementById('output-text');
-        const tempText = input.value;
-        input.value = output.value;
+        // Pasamos el texto de la derecha a la izquierda para poder traducir de vuelta
+        const inputField = document.getElementById('input-text');
+        const outputField = document.getElementById('output-text');
         
-        traducir();
+        const textoParaMover = outputField.value;
+        inputField.value = textoParaMover;
+        
+        // Ejecutamos la traducción con el nuevo modo
+        ejecutarTraduccion();
     }
 </script>
 
