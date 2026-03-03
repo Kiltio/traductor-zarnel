@@ -3,307 +3,203 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Traductor Zarnel - Estilo Google</title>
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <title>Traductor Zarnel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --primary-color: #1a73e8; /* Azul Google */
-            --bg-color: #f8f9fa;
-            --border-color: #dadce0;
-            --text-color: #202124;
-            --textarea-bg: #fff;
-        }
-
         body {
-            font-family: 'Roboto', arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
+            font-family: 'Roboto', sans-serif;
+            background-color: #ffffff;
             margin: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
-            min-height: 100vh;
+            color: #3c4043;
         }
 
-        /* Cabecera falsa de Google */
-        header {
+        .main-wrapper {
             width: 100%;
-            background: #fff;
-            padding: 15px 30px;
-            border-bottom: 1px solid var(--border-color);
-            box-sizing: border-box;
+            max-width: 1000px;
+            margin-top: 50px;
+            padding: 20px;
+        }
+
+        /* Contenedor de los selectores de idioma y flecha */
+        .controls {
             display: flex;
             align-items: center;
-        }
-        
-        header img {
-            height: 24px;
-            margin-right: 10px;
+            justify-content: flex-start;
+            gap: 10px;
+            margin-bottom: 8px;
         }
 
-        header span {
-            font-size: 22px;
-            color: #5f6368;
-        }
-
-        .main-container {
-            width: 100%;
-            max-width: 1280px;
-            padding: 40px 20px;
-            box-sizing: border-box;
-        }
-
-        /* Barra de selección de idiomas */
-        .language-bar {
-            background: #fff;
-            border: 1px solid var(--border-color);
-            border-bottom: none;
-            border-radius: 8px 8px 0 0;
-            display: grid;
-            grid-template-columns: 1fr 50px 1fr;
-            align-items: center;
-            height: 48px;
-        }
-
-        .lang-name {
-            text-align: center;
+        .lang-box {
+            border: 1px solid #dadce0;
+            border-radius: 8px;
+            padding: 10px 15px;
+            min-width: 150px;
             font-weight: 500;
-            color: #5f6368;
-            font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            color: #1a73e8;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: default;
         }
 
-        .lang-name.active {
-            color: var(--primary-color);
+        .lang-box::after {
+            content: '▼';
+            font-size: 10px;
+            margin-left: 10px;
         }
 
-        /* El botón de la flecha */
-        .swap-button {
-            background: none;
-            border: none;
-            color: #5f6368;
+        .swap-icon {
             cursor: pointer;
+            color: #5f6368;
+            font-size: 20px;
+            padding: 5px;
+            transition: background 0.2s;
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: background-color 0.2s;
-            margin: 0 auto;
         }
 
-        .swap-button:hover {
+        .swap-icon:hover {
             background-color: #f1f3f4;
-            color: var(--text-color);
         }
 
-        .swap-button .material-icons {
-            font-size: 20px;
+        /* Contenedor de las cajas de texto */
+        .translator-container {
+            display: flex;
+            gap: 12px;
+            width: 100%;
         }
 
-        /* Área de las cajas de texto */
-        .translation-cards {
-            display: grid;
-            grid-template-columns: 1fr;
-            border: 1px solid var(--border-color);
-            border-radius: 0 0 8px 8px;
-            background: #fff;
-            box-shadow: 0 1px 2px 0 rgba(60,64,67,.3), 0 1px 3px 1px rgba(60,64,67,.15);
-        }
-
-        /* Separador vertical estilo Google (oculto en móvil) */
-        @media (min-width: 720px) {
-            .translation-cards {
-                grid-template-columns: 1fr 1px 1fr;
-            }
-            .vertical-divider {
-                background-color: var(--border-color);
-                width: 1px;
-                height: 100%;
-            }
-        }
-
-        @media (max-width: 719px) {
-            .vertical-divider { display: none; }
-        }
-
-        .card {
-            padding: 20px;
+        .box {
+            flex: 1;
             position: relative;
         }
 
         textarea {
             width: 100%;
-            height: 150px;
-            border: none;
+            height: 180px;
+            border: 1px solid #dadce0;
+            border-radius: 8px;
+            padding: 20px;
+            font-size: 24px;
+            color: #3c4043;
             resize: none;
             outline: none;
-            font-size: 16px;
-            color: var(--text-color);
-            padding: 0;
+            box-sizing: border-box;
             font-family: inherit;
         }
 
-        .card-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 10px;
-            color: #5f6368;
-            font-size: 12px;
+        #output-text {
+            background-color: #f8f9fa;
         }
 
-        /* Botón de copiar */
-        .icon-button {
-            background: none;
-            border: none;
+        /* Estilo del placeholder como el de tu imagen */
+        textarea::placeholder {
+            color: #70757a;
+            font-weight: 400;
+        }
+
+        .mic-icon {
+            position: absolute;
+            bottom: 15px;
+            left: 20px;
             color: #5f6368;
+            font-size: 20px;
             cursor: pointer;
-            border-radius: 50%;
-            padding: 8px;
         }
-        .icon-button:hover { background-color: #f1f3f4; }
-        .icon-button .material-icons { font-size: 18px; }
 
+        @media (max-width: 768px) {
+            .translator-container {
+                flex-direction: column;
+            }
+        }
     </style>
 </head>
 <body>
 
-<header>
-    <img src="https://www.gstatic.com/images/branding/googlelogo/svg/googlelogo_clr_74x24px.svg" alt="Google Logo Falso">
-    <span>Zarnel</span>
-</header>
-
-<div class="main-container">
-    
-    <div class="language-bar">
-        <div class="lang-name active" id="langInputName">Español</div>
-        
-        <button class="swap-button" onclick="intercambiarIdiomas()" title="Intercambiar idiomas">
-            <span class="material-icons">swap_horiz</span>
-        </button>
-        
-        <div class="lang-name active" id="langOutputName">Zarnel</div>
+<div class="main-wrapper">
+    <div class="controls">
+        <div class="lang-box" id="label-left">Español</div>
+        <div class="swap-icon" onclick="swap()">⇄</div>
+        <div class="lang-box" id="label-right">Zarnel</div>
     </div>
 
-    <div class="translation-cards">
-        
-        <div class="card">
-            <textarea id="inputText" placeholder="Escribe para traducir..." oninput="detectarYTraducir()"></textarea>
-            <div class="card-footer">
-                <span id="charCountInput">0</span>
-                </div>
+    <div class="translator-container">
+        <div class="box">
+            <textarea id="input-text" placeholder="Escribe, habla o toma fotos" oninput="translate()"></textarea>
+            <div class="mic-icon">🎤</div>
         </div>
-
-        <div class="vertical-divider"></div>
-
-        <div class="card" style="background-color: #f1f3f4;">
-            <textarea id="outputText" readonly placeholder="Traducción..."></textarea>
-            <div class="card-footer">
-                <span></span> <button class="icon-button" onclick="copiarTraduccion()" title="Copiar traducción">
-                    <span class="material-icons">content_copy</span>
-                </button>
-            </div>
+        <div class="box">
+            <textarea id="output-text" placeholder="Traducción" readonly></textarea>
         </div>
     </div>
-
 </div>
 
 <script>
-    // Tu Diccionario Zarnel (intacto)
-    const diccionario = {
+    const dictionary = {
         'a':'va','e':'ve','i':'vi','o':'vo','u':'vu',
-        'b':'ca','c':'ce','d':'ci','f':'co','g':'cu','h':'da','j':'de','k':'di','l':'do','m':'du','n':'fa','ñ':'fe','p':'fi','q':'fo','r':'fu','s':'ga','t':'ge','v':'gi','w':'go','x':'gu','y':'ha','z':'he'
+        'b':'ca','c':'ce','ci':'ci','d':'ci','f':'co','g':'cu','h':'da','j':'de','k':'di','l':'do','m':'du','n':'fa','ñ':'fe','p':'fi','q':'fo','r':'fu','s':'ga','t':'ge','v':'gi','w':'go','x':'gu','y':'ha','z':'he'
     };
 
-    // Diccionario invertido (intacto)
-    const invDiccionario = {};
-    for(let letra in diccionario) { invDiccionario[diccionario[letra]] = letra; }
+    const reverseDict = {};
+    for (let key in dictionary) { reverseDict[dictionary[key]] = key; }
 
-    // Estado del traductor: true = Español->Zarnel, false = Zarnel->Español
-    let modoEspañolAZarnel = true;
+    let isSpanishToZarnel = true;
 
-    // Elementos del DOM
-    const inputTextDom = document.getElementById('inputText');
-    const outputTextDom = document.getElementById('outputText');
-    const langInputNameDom = document.getElementById('langInputName');
-    const langOutputNameDom = document.getElementById('langOutputName');
-    const charCountInputDom = document.getElementById('charCountInput');
-
-    // Función de limpieza de reglas 2 y 3 (intacta)
-    function limpiarTexto(texto) {
-        return texto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    function cleanText(text) {
+        return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     }
 
-    // Lógica de traducción principal
-    function detectarYTraducir() {
-        const texto = inputTextDom.value;
-        charCountInputDom.innerText = texto.length; // Actualizar contador
-
-        if (texto.trim() === "") {
-            outputTextDom.value = "";
-            return;
-        }
-
-        if (modoEspañolAZarnel) {
-            // Lógica Español -> Zarnel (Regla 4 y 5)
-            let textoLimpio = limpiarTexto(texto);
-            let resultado = "";
-            for (let letra of textoLimpio) {
-                resultado += diccionario[letra] || letra; 
+    function translate() {
+        const input = document.getElementById('input-text').value;
+        const output = document.getElementById('output-text');
+        
+        if (isSpanishToZarnel) {
+            let cleanInput = cleanText(input);
+            let result = "";
+            for (let char of cleanInput) {
+                result += dictionary[char] || char;
             }
-            outputTextDom.value = resultado;
+            output.value = result;
         } else {
-            // Lógica Zarnel -> Español (reconoce pares de letras)
-            let textoZar = texto.toLowerCase();
-            let resultado = "";
+            let zarInput = input.toLowerCase();
+            let result = "";
             let i = 0;
-            while (i < textoZar.length) {
-                let par = textoZar.substr(i, 2);
-                if (invDiccionario[par]) {
-                    resultado += invDiccionario[par];
+            while (i < zarInput.length) {
+                let pair = zarInput.substr(i, 2);
+                if (reverseDict[pair]) {
+                    result += reverseDict[pair];
                     i += 2;
                 } else {
-                    resultado += textoZar[i];
+                    result += zarInput[i];
                     i += 1;
                 }
             }
-            outputTextDom.value = resultado;
+            output.value = result;
         }
     }
 
-    // NUEVA FUNCIÓN: Intercambiar idiomas (Botón flecha)
-    function intercambiarIdiomas() {
-        modoEspañolAZarnel = !modoEspañolAZarnel; // Cambiar el estado
-
-        if (modoEspañolAZarnel) {
-            langInputNameDom.innerText = "Español";
-            langOutputNameDom.innerText = "Zarnel";
-            inputTextDom.placeholder = "Escribe para traducir...";
-        } else {
-            langInputNameDom.innerText = "Zarnel";
-            langOutputNameDom.innerText = "Español";
-            inputTextDom.placeholder = "Gefe vegafuvebava...";
-        }
-
-        // Intercambiar los textos actuales si hay algo escrito
-        const textoEntradaActual = inputTextDom.value;
-        const textoSalidaActual = outputTextDom.value;
+    function swap() {
+        isSpanishToZarnel = !isSpanishToZarnel;
         
-        inputTextDom.value = textoSalidaActual;
-        outputTextDom.value = textoEntradaActual;
-        
-        // Volver a traducir para asegurar coherencia
-        detectarYTraducir();
-    }
+        // Intercambiar etiquetas
+        const left = document.getElementById('label-left');
+        const right = document.getElementById('label-right');
+        const tempLabel = left.innerText;
+        left.innerText = right.innerText;
+        right.innerText = tempLabel;
 
-    // EXTRA: Función para copiar el texto
-    function copiarTraduccion() {
-        outputTextDom.select();
-        document.execCommand('copy');
-        alert("¡Texto copiado!");
+        // Intercambiar contenido de las cajas
+        const inputField = document.getElementById('input-text');
+        const outputField = document.getElementById('output-text');
+        const tempText = inputField.value;
+        inputField.value = outputField.value;
+        
+        translate();
     }
 </script>
 
